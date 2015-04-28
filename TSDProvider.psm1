@@ -28,9 +28,9 @@ function Resolve-PackageSource {
     $IsValidated  = $true
     
     foreach($Name in @($request.PackageSources)) {
-    	$Location = "https://api.github.com/users/$($Name)/gists"
+    	$Location = "https://api.github.com/repos/borisyankov/DefinitelyTyped/contents"
     	
-    	write-debug "In $($ProviderName)- Resolve-PackageSources gist: {0}" $Location
+    	write-debug "In $($ProviderName)- Resolve-PackageSources TSD: {0}" $Location
 
         New-PackageSource $Name $Location $IsTrusted $IsRegistered $IsValidated
     }        
@@ -61,7 +61,7 @@ function Find-Package {
 				fastPackageReference = $targetItem.url
 				name                 = $targetItem.name
 				source               = "TypeScript"
-				summary              = "TypeScript Definition"
+				summary              = "TypeScript Definition for $($targetItem.name)"
 				searchKey            = $targetItem.name
 			}           
 
@@ -78,19 +78,25 @@ function Install-Package {
     
         $rawUrl = ($fastPackageReference|convertfrom-json).fastPackageReference
 	
-	write-debug "In $($ProviderName) - Install-Package - {0}" $rawUrl	
+	write-debug "In $($ProviderName) - Install-Package - {0}" $rawUrl
+	write-debug "Options - {0}" $request.Options.Destination
+	write-debug "Creds - {0}" $request.Credential
 	
+	$OutPath = Resolve-Path $request.Options.Destination
 	md -ErrorAction Ignore $TSDPath | out-null
 	
-	foreach($TSD in ( (Invoke-RestMethod $rawUrl) | Where {$_.name -match '\.d\.'})) {	
+	if($request.Credential) { $Header = (Get-AuthHeader $request.Credential) }
 	
-	    $details = Invoke-RestMethod $TSD.url
+	foreach($TSD in ( (Invoke-RestMethod $rawUrl -Header $Header) | Where {$_.name -match '\.d\.'})) {	
+	
+	    $details = Invoke-RestMethod $TSD.url -Header $Header
 	    
 	    Write-Debug "{0}" $details.name
 	    Write-Debug "{0}" $details.download_url
 	    
-	    $outfile = "$($TSDPath)\$($details.name)"
-	    Invoke-RestMethod $details.download_url -outfile $outfile
+	    $outfile = Join-Path $OutPath $details.name
+	    
+	    Invoke-RestMethod $details.download_url -outfile $outfile -Header $Header
 	    
 	    write-verbose "Package intstall location {0}" $outfile
 	}
@@ -129,4 +135,29 @@ function Get-InstalledPackage {
             New-SoftwareIdentity @item
         }
     }
+}
+
+function Get-DynamicOptions { 
+    param(
+        [Microsoft.PackageManagement.MetaProvider.PowerShell.OptionCategory] $category
+    )
+    
+        write-debug "In TSDProvider - Get-DynamicOption for category $category"
+
+	switch( $category ) {
+		Package {
+			# options when the user is trying to specify a package 
+			#write-Output (New-DynamicOption $category "SS" SecureString $false )
+		}
+
+		Source {
+			#options when the user is trying to specify a source
+		}
+		
+		Install {
+			#options for installation/uninstallation 
+			#write-Output (New-DynamicOption $category "Destination" Path $true)
+			New-DynamicOption $category "Destination" Path $true
+		}
+	}
 }
