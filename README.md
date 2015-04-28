@@ -3,7 +3,7 @@ PowerShell PackageManagement TSD Provider
 
 **TypeScriptDefinition-as-a-package**
 
-Enables searching and installing TypeScript Definition files
+PowerShell PackageManager provider to search & install [TypeScript](http://www.typescriptlang.org/) definition files from the community [DefinitelyTyped repo](https://github.com/borisyankov/DefinitelyTyped)
 
 In Action
 -
