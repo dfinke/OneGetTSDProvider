@@ -1,13 +1,13 @@
-PowerShell OneGet TSD Provider
+PowerShell PackageManagement TSD Provider
 -
 
-**TSD-as-a-package**
+**TypeScriptDefinition-as-a-package**
 
-This PowerShell module implements the [PackageManagement PowerShell provider SDK]( http://oneget.org/provider-ps.zip).
-
-It enables searching and installing TypeScript Definition files
+Enables searching and installing TypeScript Definition files
 
 In Action
 -
 
 ![image](https://raw.githubusercontent.com/dfinke/OneGetTSDProvider/master/images/TSD.gif)
+
+This PowerShell module implements the [PackageManagement PowerShell provider SDK]( http://oneget.org/provider-ps.zip).
